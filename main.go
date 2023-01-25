@@ -92,22 +92,32 @@ func main() {
 
 	// generate password if asked
 	if pwd != "" {
-		arr := strings.Split(pwd, ":")
-		i, e := strconv.Atoi(arr[0])
-		if e != nil {
-			log.Fatal(e)
-		}
-		var numbers, symbols bool
-		if strings.Contains(pwd, "n") {
-			numbers = true
-		}
-		if strings.Contains(pwd, "s") {
-			symbols = true
-		}
-		p := CreatePassword(i, numbers, symbols)
-		copy2clipboard(p, fmt.Sprintf("New password %s copied to clipboard", p))
+		genPassword(pwd)
 		os.Exit(0)
 	}
+	manageKeePass(kpath, kfile, pwd, interval)
+}
+
+// helper function to generate password
+func genPassword(pwd string) {
+	arr := strings.Split(pwd, ":")
+	i, e := strconv.Atoi(arr[0])
+	if e != nil {
+		log.Fatal(e)
+	}
+	var numbers, symbols bool
+	if strings.Contains(pwd, "n") {
+		numbers = true
+	}
+	if strings.Contains(pwd, "s") {
+		symbols = true
+	}
+	p := CreatePassword(i, numbers, symbols)
+	copy2clipboard(p, fmt.Sprintf("New password %s copied to clipboard", p))
+}
+
+// helper function to mange KeePass database
+func manageKeePass(kpath, kfile, pwd string, interval int) {
 
 	file, err := os.Open(kpath)
 	if err != nil {

@@ -143,7 +143,11 @@ func manageKeePass(kpath, kfile, pwd, cipher string, interval int) {
 				clipboardCopy(input)
 				inputMsg = inputMsgOrig
 			} else if matched := patRemove.MatchString(input); matched {
-				removeRecord(input)
+				if rid, err := strconv.Atoi(input); err == nil {
+					removeRecord(kpath, kfile, pwd, db, rid)
+				} else {
+					log.Printf("ERROR: unable to parse record id, error: %v", err)
+				}
 				inputMsg = inputMsgOrig
 			} else if matched := patAdd.MatchString(input); matched {
 				if rec == nil {
@@ -179,7 +183,32 @@ func manageKeePass(kpath, kfile, pwd, cipher string, interval int) {
 }
 
 // helper function to remove record from the database
-func removeRecord(input string) {
+func removeRecord(dbPath, kfile, pwd string, db *gokeepasslib.Database, rid int) {
+	// find our record for given input
+	recEntry := dbRecords[rid]
+
+	// iterate over existing db entries and add it to our group
+	// but skip our record entry corresponding to given record id
+	group := gokeepasslib.NewGroup()
+	// iterate over existing db entries and add it to our group
+	for _, top := range db.Content.Root.Groups {
+		group.Name = top.Name
+		for _, entry := range top.Entries {
+			if entry.UUID != recEntry.UUID {
+				group.Entries = append(group.Entries, entry)
+			}
+		}
+		for _, groups := range top.Groups {
+			for _, entry := range groups.Entries {
+				if entry.UUID != recEntry.UUID {
+					group.Entries = append(group.Entries, entry)
+				}
+			}
+		}
+	}
+
+	// write new database file
+	writeNewDB(dbPath, kfile, pwd, group)
 }
 
 // helper function to make entry db value
@@ -197,7 +226,6 @@ func mkProtectedValue(key string, value string) gokeepasslib.ValueData {
 
 // helper function to save record to the database
 func saveRecord(dbPath, kfile, pwd string, db *gokeepasslib.Database, rec Record) {
-	var err error
 
 	// add Title to record if it is missing
 	if _, ok := rec["Title"]; !ok {
@@ -241,6 +269,15 @@ func saveRecord(dbPath, kfile, pwd string, db *gokeepasslib.Database, rec Record
 
 	// update db group entries
 	group.Entries = append(group.Entries, entry)
+
+	// write new database file
+	writeNewDB(dbPath, kfile, pwd, group)
+}
+
+// helper function to write new database file with given group
+func writeNewDB(dbPath, kfile, pwd string, group gokeepasslib.Group) {
+
+	var err error
 
 	// write group entries to DB
 	// https://github.com/tobischo/gokeepasslib/blob/master/examples/writing/example-writing.go

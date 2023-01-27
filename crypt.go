@@ -34,11 +34,20 @@ func genPassword(pwd string) {
 }
 
 // helper function to encrypt or decrypt given file
-func cryptFile(fname, cipher, action string) {
+func cryptFile(fname, kfile, cipher, action string) {
 	password := readPassword("Enter password: ")
 	data, err := os.ReadFile(fname)
 	if err != nil {
 		log.Fatal(err)
+	}
+	// if key file is given we'll use KeyFile data value and its hash to
+	// enhance the password
+	if kfile != "" {
+		if keyFile, err := readKeyFile(kfile); err == nil {
+			password = fmt.Sprintf("%s-%s-%s", password, keyFile.Key.Data.Value, keyFile.Key.Data.Hash)
+		} else {
+			log.Fatal(err)
+		}
 	}
 	var oname string
 	if action == "decrypt" {
@@ -67,11 +76,11 @@ func cryptFile(fname, cipher, action string) {
 }
 
 // encryptFile encrypt given file
-func encryptFile(efile, cipher string) {
-	cryptFile(efile, cipher, "encrypt")
+func encryptFile(fname, kfile, cipher string) {
+	cryptFile(fname, kfile, cipher, "encrypt")
 }
 
 // decryptFile decrypt given file
-func decryptFile(efile, cipher string) {
-	cryptFile(efile, cipher, "decrypt")
+func decryptFile(fname, kfile, cipher string) {
+	cryptFile(fname, kfile, cipher, "decrypt")
 }

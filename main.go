@@ -88,13 +88,13 @@ func main() {
 	}
 	// decrypt given file
 	if dfile != "" {
-		decryptFile(dfile, cipher)
+		decryptFile(dfile, kfile, cipher)
 		return
 	}
 	// encrypt given file
 	if efile != "" {
-		encryptFile(efile, cipher)
+		encryptFile(efile, kfile, cipher)
 		return
 	}
-	manageKeePass(kpath, kfile, pwd, interval)
+	manageKeePass(kpath, kfile, pwd, cipher, interval)
 }

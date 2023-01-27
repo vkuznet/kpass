@@ -32,7 +32,7 @@ var inputPwd bool
 var dbRecords DBRecords
 
 // helper function to mange KeePass database
-func manageKeePass(kpath, kfile, pwd string, interval int) {
+func manageKeePass(kpath, kfile, pwd, cipher string, interval int) {
 
 	file, err := os.Open(kpath)
 	if err != nil {
@@ -134,11 +134,11 @@ func manageKeePass(kpath, kfile, pwd string, interval int) {
 			} else if matched := patEncrypt.MatchString(input); matched {
 				fname := strings.Replace(input, "encrypt", "", -1)
 				fname = strings.Trim(fname, " ")
-				encryptFile(fname, "aes")
+				encryptFile(fname, kfile, cipher)
 			} else if matched := patDecrypt.MatchString(input); matched {
 				fname := strings.Replace(input, "encrypt", "", -1)
 				fname = strings.Trim(fname, " ")
-				decryptFile(fname, "aes")
+				decryptFile(fname, kfile, cipher)
 			} else if matched := patCopy.MatchString(input); matched {
 				clipboardCopy(input)
 				inputMsg = inputMsgOrig

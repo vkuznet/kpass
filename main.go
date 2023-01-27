@@ -81,23 +81,6 @@ func main() {
 		os.Exit(0)
 	}
 
-	// test keyfile functionality
-	/*
-		if kfile != "" {
-			keyFile, err := readKeyFile(kfile)
-			if err == nil {
-				log.Printf("keyfile %+v", keyFile)
-			} else {
-				log.Fatal(err)
-			}
-			err = writeKeyFile(keyFile, "/tmp/keyfile.keyx")
-			if err != nil {
-				log.Fatal(err)
-			}
-			return
-		}
-	*/
-
 	// generate password if asked
 	if pwd != "" {
 		genPassword(pwd)
